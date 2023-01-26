@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 근처 병원찾기 | Sample Page</title>
+
+    <!-- css -->
+    <link rel="stylesheet" href="./assets/css/main.css">
+    <link rel="stylesheet" href="./assets/css/fonts.css">
+    <link rel="stylesheet" href="./assets/css/reset.css">
+
+    <!-- style -->
+    <style>
+        #mapwrap {
+            position: relative;
+            overflow: hidden;
+            width: 600px;
+            height: 400px;
+        }
+
+        .category,
+        .category * {
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        .category {
+            position: absolute;
+            overflow: hidden;
+            top: 10px;
+            left: 10px;
+            width: 102px;
+            height: 51px;
+            z-index: 10;
+            border: 1px solid black;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            font-size: 12px;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .category .menu_selected {
+            background: #f9ffa5;
+        }
+
+        .category li {
+            list-style: none;
+            float: left;
+            width: 50px;
+            height: 50px;
+            padding-top: 5px;
+            cursor: pointer;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+        }
+
+        .category .ico_comm {
+            display: block;
+            margin: 0 auto 2px;
+            width: 22px;
+            height: 26px;
+        }
+
+        .category .pharmacy {
+            background: url('./assets/img/pharmacy.png') no-repeat ;
+            background-size: 24px;
+        }
+        
+        .category .hospital {
+            background: url('./assets/img/hospital.png') no-repeat ;
+            background-size: 24px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="wrap">
+        <div class="header"></div>
+        <!-- //header -->
+        <div id="mapwrap">
+            <!-- 지도가 표시될 div -->
+            <div id="map" style="width:600px;height:400px;"></div>
+            <!-- 지도 위에 표시될 마커 카테고리 -->
+            <div class="category">
+                <ul>
+                    <li id="phaMenu" onclick="changeMarker('pha')">
+                        <span class="ico_comm pharmacy"></span>
+                        동물약국
+                    </li>
+                    <li id="hosMenu" onclick="changeMarker('hos')">
+                        <span class="ico_comm hospital"></span>
+                        동물병원
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <footer id="footer"></footer>
+    </div>
+
+    <!-- script -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9072a8bb4b56b5b44afb6d6d37a0b2e7"></script>
+    <script src="./assets/js/header.js"></script>
+    </script>
+    <script>
+        const cookies = "<%= cookie %>";
+        if (cookies === "false") {
+            document.querySelector(".log").innerHTML = "로그인";
+            document.querySelector(".log").href = "/login";
+        } else {
+            document.querySelector(".log").innerHTML = "로그아웃";
+            document.querySelector(".log").href = "/logout";
+        }
+        var container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
+        var options = { //지도를 생성할 때 필요한 기본 옵션
+            center: new kakao.maps.LatLng(37.3183169898, 126.8352), //지도의 중심좌표.
+            level: 4 //지도의 레벨(확대, 축소 정도)
+        };
+
+        var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+
+        let hosLogt = "<%= JSON.stringify(hosLogt) %>";
+        let hosLat = "<%= JSON.stringify(hosLat) %>";
+        let hosName = "<%= JSON.stringify(hosName) %>";
+        let phaLogt = "<%= JSON.stringify(phaLogt) %>";
+        let phaLat = "<%= JSON.stringify(phaLat) %>";
+        let phaName = "<%= JSON.stringify(phaName) %>";
+        hosLogt = JSON.parse(hosLogt.replaceAll("&#34;", '\"'))
+        hosLat = JSON.parse(hosLat.replaceAll("&#34;", '\"'))
+        hosName = JSON.parse(hosName.replaceAll("&#34;", '\"'))
+        phaLogt = JSON.parse(phaLogt.replaceAll("&#34;", '\"'))
+        phaLat = JSON.parse(phaLat.replaceAll("&#34;", '\"'))
+        phaName = JSON.parse(phaName.replaceAll("&#34;", '\"'))
+        var hosImg = "./assets/img/hospital.png"
+        var phaImg = "./assets/img/pharmacy.png"
+
+        let hosMarker = [];
+        let phaMarker = [];
+
+        for (let i = 0; i <= Object.keys(phaLogt).length; i++) {
+            hosMarker.push(new kakao.maps.LatLng(hosLat[i], hosLogt[i]))
+            phaMarker.push(new kakao.maps.LatLng(phaLat[i], phaLogt[i]))
+        }
+        var PM = [], // 동물약국 마커 객체를 가지고 있을 배열입니다
+            HM = []; // 동물병원 마커 객체를 가지고 있을 배열입니다
+        var markerImageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/category.png'
+        createPhaMarker(); 
+        createHosMarker(); 
+        function createMarker(position, image) {
+            var marker = new kakao.maps.Marker({
+                position: position,
+                image: image
+            });
+
+            return marker;
+        }
+
+        function createMarkerImage(src, size, options) {
+            var markerImage = new kakao.maps.MarkerImage(src, size, options);
+            return markerImage;
+        }
+
+        function createPhaMarker() {
+            for (var i = 0; i < phaMarker.length; i++) {
+
+                var imageSize = new kakao.maps.Size(36, 36),
+                    imageOptions = {
+                        spriteOrigin: new kakao.maps.Point(0, 0),
+                        spriteSize: new kakao.maps.Size(30, 30)
+                    };
+
+                // 마커이미지와 마커를 생성합니다
+                var markerImage = createMarkerImage(phaImg, imageSize, imageOptions),
+                    marker = createMarker(phaMarker[i], markerImage);
+                // 생성된 마커를 동물약국 마커 배열에 추가합니다
+                PM.push(marker);
+            }
+        }
+
+        function setHos(map) {
+            for (var i = 0; i < hosMarker.length; i++) {
+                HM[i].setMap(map);
+            }
+        }
+
+        function createHosMarker() {
+            for (var i = 0; i < hosMarker.length; i++) {
+
+                var imageSize = new kakao.maps.Size(36, 36),
+                    imageOptions = {
+                        spriteOrigin: new kakao.maps.Point(0, 0),
+                        spriteSize: new kakao.maps.Size(30, 30)
+                    };
+
+                // 마커이미지와 마커를 생성합니다
+                var markerImage = createMarkerImage(hosImg, imageSize, imageOptions),
+                    marker = createMarker(hosMarker[i], markerImage);
+
+                // 생성된 마커를 동물병원 마커 배열에 추가합니다
+                HM.push(marker);
+            }
+        }
+
+        function setPha(map) {
+            for (var i = 0; i < phaMarker.length; i++) {
+                PM[i].setMap(map);
+            }
+        }
+
+        function changeMarker(type) {
+
+            var phaMenu = document.getElementById('phaMenu');
+            var hosMenu = document.getElementById('hosMenu');
+
+
+            // 동물약국 카테고리가 클릭됐을 때
+            if (type === 'pha') {
+
+                // 동물약국 카테고리를 선택된 스타일로 변경하고 나머진 x로
+                phaMenu.className = 'menu_selected';
+                hosMenu.className = '';
+
+
+                // 동물약국 마커들만 지도에 표시하도록 설정합니다
+                setPha(map);
+                setHos(null);
+
+            } else { // 동물병원 카테고리가 클릭됐을 때
+
+                // 동물병원 카테고리를 선택된 스타일로 변경하고
+                phaMenu.className = '';
+                hosMenu.className = 'menu_selected';
+
+                // 동물병원 마커들만 지도에 표시하도록 설정합니다
+                setPha(null);
+                setHos(map);
+
+            }
+        }
+    </script>
+</body>
+
+</html>
