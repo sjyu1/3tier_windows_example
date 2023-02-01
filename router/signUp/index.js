@@ -12,7 +12,7 @@ var connections = new mysql.ConnectionPool({
 	user: 'test',
 	password: 'Ablecloud1!',
 	port: '1433',
-	database: 'able_db',
+	database: 'testdb',
         options: {
             encrypt: true
         }
@@ -26,7 +26,7 @@ var config = {
 	user: 'test',
 	password: 'Ablecloud1!',
 	port: 1433,
-	database: 'able_db',
+	database: 'testdb',
         options: {
             encrypt: false
         }

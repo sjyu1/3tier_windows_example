@@ -19,7 +19,7 @@ var config = {
 	user: 'test',
 	password: 'Ablecloud1!',
 	port: 1433,
-	database: 'able_db',
+	database: 'testdb',
         options: {
             encrypt: false
         }

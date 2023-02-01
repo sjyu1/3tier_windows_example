@@ -1,5 +1,5 @@
 -- create database
-CREATE DATABASE able_db;
+CREATE DATABASE testdb;
 
 -- create table
 create table member
