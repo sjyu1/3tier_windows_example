@@ -6,25 +6,10 @@ var mysql = require('mssql')
 var crypto = require('crypto');
 const salt = crypto.randomBytes(128).toString('base64');
 
-// DATABASE setting
-var connections = new mysql.ConnectionPool({
-	host: '10.1.1.170',
-	user: 'test',
-	password: 'Ablecloud1!',
-	port: '1433',
-	database: 'testdb',
-        options: {
-            encrypt: true
-        }
-});
-
-//connection.connect();
-
-//===========
 var config = {
 	server: '10.1.1.170',
 	user: 'test',
-	password: 'Ablecloud1!',
+	password: 'test1!!',
 	port: 1433,
 	database: 'testdb',
         options: {
@@ -39,7 +24,6 @@ const pool = new mysql.ConnectionPool(config)
     return pool
   })
   .catch(err => console.log('Database Connection Failed! Bad Config: ', err))
-//===========
 
 router.get('/', function (req, res) {
     if (req.cookies.user){
@@ -69,7 +53,7 @@ router.post('/', async function (req, res, next) {
 				salt: salt
 			};
 			// create query 
-                        var sql2= "INSERT INTO member (userid,email,password,salt) VALUES ('"+id+"','"+email+"','"+hashPassword+"','"+salt+"');";
+            var sql2= "INSERT INTO member (userid,email,password,salt) VALUES ('"+id+"','"+email+"','"+hashPassword+"','"+salt+"');";
 			var query = pools.request().query(sql2, function (err, rows) {
 				if (err) throw err;
 				else {

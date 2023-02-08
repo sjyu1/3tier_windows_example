@@ -8,23 +8,16 @@ var cookies = require('cookie-parser');
 const { has } = require('cheerio/lib/api/traversing')
 const salt = crypto.randomBytes(128).toString('base64');
 
-// DATABASE setting
-
-
-// connection.connect();
-
-//===========
 var config = {
 	server: '10.1.1.170',
 	user: 'test',
-	password: 'Ablecloud1!',
+	password: 'test1!',
 	port: 1433,
 	database: 'testdb',
         options: {
             encrypt: false
         }
 };
-//===========
 
 router.get('/', function (req, res) {
     if (req.cookies.user){
@@ -41,8 +34,8 @@ router.post('/', async function (req, res, next) {
 
     var query = "select salt, password from member where userid='" + id + "';"
     console.log(query);
-    var pools2 = await mysql.connect(config)
-    pools2.request().query(query, function (err, rows){
+    var pools = await mysql.connect(config)
+    pools.request().query(query, function (err, rows){
         if(err) throw err;
         else {
             if (rows.length == 0) { // 아이디가 존재하지 않는 경우
